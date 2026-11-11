@@ -66,6 +66,18 @@ public class RiesgoServlet extends HttpServlet {
                     mensaje(request, "Riesgo " + r.getCodigo() + " eliminado.");
                 }
                 response.sendRedirect(request.getContextPath() + "/app/riesgos");
+            } else if ("estado".equals(accion)) {
+                int id = entero(request.getParameter("id"), -1);
+                String estado = valor(request.getParameter("estado"));
+                Riesgo r = dao.buscar(id);
+                if (r == null) {
+                    mensaje(request, "El riesgo ya no existe.");
+                } else if (!Catalogos.ESTADOS.contains(estado)) {
+                    mensaje(request, "Estado no válido.");
+                } else if (dao.cambiarEstado(id, estado)) {
+                    mensaje(request, "Riesgo " + r.getCodigo() + " marcado como " + estado + ".");
+                }
+                response.sendRedirect(request.getContextPath() + "/app/riesgos" + volverA(request));
             } else if ("guardar".equals(accion)) {
                 Riesgo r = leerFormulario(request);
                 List<String> errores = validar(r);
@@ -189,6 +201,21 @@ public class RiesgoServlet extends HttpServlet {
             }
         }
         return e;
+    }
+
+    /** Conserva el orden y el filtro de la matriz al volver a ella. */
+    private static String volverA(HttpServletRequest request) throws IOException {
+        String orden = valor(request.getParameter("orden"));
+        String filtro = valor(request.getParameter("filtroEstado"));
+        StringBuilder q = new StringBuilder();
+        if (orden.matches("id|inherente|residual")) {
+            q.append("orden=").append(orden);
+        }
+        if (Catalogos.ESTADOS.contains(filtro)) {
+            q.append(q.length() > 0 ? "&" : "").append("estado=")
+                    .append(java.net.URLEncoder.encode(filtro, "UTF-8"));
+        }
+        return q.length() > 0 ? "?" + q : "";
     }
 
     private static void mensaje(HttpServletRequest request, String texto) {

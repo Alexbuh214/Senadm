@@ -108,6 +108,15 @@ public class RiesgoDAO {
         }
     }
 
+    public boolean cambiarEstado(int id, String estado) throws SQLException {
+        try (Connection cn = Conexion.obtener();
+                PreparedStatement ps = cn.prepareStatement("UPDATE RIESGO SET ESTADO=? WHERE ID=?")) {
+            ps.setString(1, estado);
+            ps.setInt(2, id);
+            return ps.executeUpdate() == 1;
+        }
+    }
+
     public boolean eliminar(int id) throws SQLException {
         try (Connection cn = Conexion.obtener();
                 PreparedStatement ps = cn.prepareStatement("DELETE FROM RIESGO WHERE ID=?")) {

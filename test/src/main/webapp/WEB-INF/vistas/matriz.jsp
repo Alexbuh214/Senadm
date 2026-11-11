@@ -99,7 +99,21 @@
                 <td class="num ${r.cssResidual}"><fmt:formatNumber value="${r.riesgoResidual}" maxFractionDigits="2"/></td>
                 <td class="num ${r.cssNuevo}"><fmt:formatNumber value="${r.nuevoNivelRiesgo}" maxFractionDigits="2"/></td>
                 <td class="largo"><c:out value="${r.nuevosRiesgos}"/></td>
-                <td><span class="estado estado-${r.estado == 'Finalizado' ? 'fin' : (r.estado == 'En Proceso' ? 'proceso' : 'pend')}"><c:out value="${r.estado}"/></span></td>
+                <td>
+                    <form method="post" action="${ctx}/app/riesgos" class="form-estado">
+                        <input type="hidden" name="accion" value="estado">
+                        <input type="hidden" name="id" value="${r.id}">
+                        <input type="hidden" name="orden" value="<c:out value='${orden}'/>">
+                        <input type="hidden" name="filtroEstado" value="<c:out value='${filtroEstado}'/>">
+                        <select name="estado" aria-label="Estado de ${r.codigo}" onchange="this.form.submit()"
+                                class="estado-${r.estado == 'Finalizado' ? 'fin' : (r.estado == 'En Proceso' ? 'proceso' : 'pend')}">
+                            <c:forEach var="e" items="${estados}">
+                                <option ${r.estado == e ? 'selected' : ''}><c:out value="${e}"/></option>
+                            </c:forEach>
+                        </select>
+                        <noscript><button type="submit" class="boton chico">OK</button></noscript>
+                    </form>
+                </td>
 
                 <td class="acciones">
                     <a class="boton chico" href="${ctx}/app/riesgos?accion=editar&id=${r.id}">Editar</a>
