@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dashboard Ejecutivo</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css?v=${applicationScope.version}">
 </head>
 <body>
 <%@include file="_cabecera.jspf"%>

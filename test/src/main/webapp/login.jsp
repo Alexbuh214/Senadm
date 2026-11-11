@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Iniciar sesión</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css?v=${applicationScope.version}">
 </head>
 <body class="centrado">
     <form class="tarjeta" method="post" action="${pageContext.request.contextPath}/login">

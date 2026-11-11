@@ -34,6 +34,8 @@ public class InicioListener implements ServletContextListener {
         sce.getServletContext().setAttribute("impactos", Catalogos.IMPACTO);
         sce.getServletContext().setAttribute("bandas", Catalogos.BANDAS);
         sce.getServletContext().setAttribute("catalogosJson", Catalogos.json());
+        // Versión de los recursos estáticos: cambia en cada arranque para que el navegador no use un CSS viejo.
+        sce.getServletContext().setAttribute("version", Long.toString(System.currentTimeMillis(), 36));
     }
 
     @Override
