@@ -46,7 +46,17 @@
             <legend>Etapa 1 · Identificación del riesgo</legend>
             <div class="grid">
                 <label>Macroproceso / Área *
-                    <input name="area" required maxlength="200" value="<c:out value='${riesgo.area}'/>">
+                    <select name="area" required id="area">
+                        <option value="">-- Seleccione --</option>
+                        <c:set var="areaEnLista" value="false"/>
+                        <c:forEach var="a" items="${areas}">
+                            <c:if test="${riesgo.area == a}"><c:set var="areaEnLista" value="true"/></c:if>
+                            <option value="<c:out value='${a}'/>" ${riesgo.area == a ? 'selected' : ''}><c:out value="${a}"/></option>
+                        </c:forEach>
+                        <c:if test="${not empty riesgo.area and not areaEnLista}">
+                            <option value="<c:out value='${riesgo.area}'/>" selected><c:out value="${riesgo.area}"/></option>
+                        </c:if>
+                    </select>
                 </label>
                 <label>Responsable
                     <input name="responsable" maxlength="200" value="<c:out value='${riesgo.responsable}'/>">

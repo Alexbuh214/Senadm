@@ -23,6 +23,7 @@ public class InicioListener implements ServletContextListener {
         } catch (SQLException e) {
             throw new IllegalStateException("No se pudo inicializar la base de datos", e);
         }
+        sce.getServletContext().setAttribute("areas", Catalogos.AREAS);
         sce.getServletContext().setAttribute("naturalezas", Catalogos.NATURALEZAS);
         sce.getServletContext().setAttribute("nivelesBrecha", Catalogos.NIVELES_BRECHA);
         sce.getServletContext().setAttribute("frecuencias", Catalogos.FRECUENCIAS);

@@ -15,6 +15,8 @@ public final class Catalogos {
     private Catalogos() {
     }
 
+    /** Macroprocesos / áreas de la empresa (lista desplegable del formulario). */
+    public static final List<String> AREAS;
     /** Naturaleza del riesgo -> definición. */
     public static final Map<String, String> NATURALEZAS;
     /** Nivel de brecha -> significado operativo. */
@@ -37,6 +39,13 @@ public final class Catalogos {
     public static final List<Banda> BANDAS;
 
     static {
+        // Para agregar o quitar áreas basta con editar esta lista y reiniciar el servidor.
+        AREAS = List.of(
+                "Tecnología de Información",
+                "Recursos Humanos",
+                "Logística y Suministros",
+                "Finanzas y Contabilidad");
+
         Map<String, String> nat = new LinkedHashMap<>();
         nat.put("Financieros y presupuestarios", "Vinculados con ingresos, gastos, activos y utilización de recursos públicos.");
         nat.put("Legales y de cumplimiento", "Relacionados con el incumplimiento de disposiciones legales, regulatorias, contractuales o internas.");

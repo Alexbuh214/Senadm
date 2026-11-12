@@ -16,6 +16,12 @@
 
     <div class="param-grid">
         <section class="panel">
+            <h2>Macroproceso / Área</h2>
+            <table class="tabla">
+                <tbody>
+                <c:forEach var="a" items="${areas}"><tr><td><c:out value="${a}"/></td></tr></c:forEach>
+                </tbody>
+            </table>
             <h2>Naturaleza del riesgo</h2>
             <table class="tabla">
                 <thead><tr><th>Naturaleza</th><th>Relación / definición</th></tr></thead>

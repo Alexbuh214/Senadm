@@ -80,7 +80,9 @@ public class RiesgoServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/app/riesgos" + volverA(request));
             } else if ("guardar".equals(accion)) {
                 Riesgo r = leerFormulario(request);
-                List<String> errores = validar(r);
+                // Un riesgo antiguo puede tener un área que ya no está en la lista: se le permite conservarla.
+                Riesgo anterior = r.getId() > 0 ? dao.buscar(r.getId()) : null;
+                List<String> errores = validar(r, anterior == null ? null : anterior.getArea());
                 if (!errores.isEmpty()) {
                     mostrarFormulario(request, response, r, errores);
                     return;
@@ -158,10 +160,12 @@ public class RiesgoServlet extends HttpServlet {
         return r;
     }
 
-    private static List<String> validar(Riesgo r) {
+    private static List<String> validar(Riesgo r, String areaAnterior) {
         List<String> e = new ArrayList<>();
         if (r.getArea().isEmpty()) {
-            e.add("El macroproceso / área es obligatorio.");
+            e.add("Seleccione el macroproceso / área.");
+        } else if (!Catalogos.AREAS.contains(r.getArea()) && !r.getArea().equals(areaAnterior)) {
+            e.add("Seleccione un macroproceso / área de la lista.");
         }
         if (r.getRiesgoIdentificado().isEmpty()) {
             e.add("El riesgo identificado es obligatorio.");
