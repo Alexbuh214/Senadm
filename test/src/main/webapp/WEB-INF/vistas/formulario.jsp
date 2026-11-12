@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${riesgo.id > 0 ? 'Editar riesgo' : 'Nuevo riesgo'}</title>
+    <title>${riesgo.id > 0 ? 'Editar riesgo' : 'Nuevo riesgo'} · SENADI</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css?v=${applicationScope.version}">
 </head>
 <body>
@@ -37,7 +37,7 @@
     </ol>
 
     <div class="asistente">
-    <form method="post" action="${ctx}/app/riesgos" class="form-riesgo" id="formRiesgo">
+    <form method="post" action="${ctx}/app/riesgos" class="form-riesgo" id="formRiesgo" autocomplete="off">
         <input type="hidden" name="accion" value="guardar">
         <input type="hidden" name="id" value="${riesgo.id}">
         <input type="hidden" name="codigo" value="<c:out value='${riesgo.codigo}'/>">

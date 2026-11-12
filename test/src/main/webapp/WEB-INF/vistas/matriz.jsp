@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Matriz Operativa</title>
+    <title>Matriz Operativa · SENADI</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css?v=${applicationScope.version}">
 </head>
 <body>
@@ -17,7 +17,7 @@
         <a class="boton" href="${ctx}/app/riesgos?accion=nuevo">+ Nuevo riesgo</a>
     </div>
 
-    <form class="filtros" method="get" action="${ctx}/app/riesgos">
+    <form class="filtros" method="get" action="${ctx}/app/riesgos" autocomplete="off">
         <label>Ordenar por
             <select name="orden" onchange="this.form.submit()">
                 <option value="id" ${orden == 'id' ? 'selected' : ''}>ID</option>
@@ -100,7 +100,7 @@
                 <td class="num ${r.cssNuevo}"><fmt:formatNumber value="${r.nuevoNivelRiesgo}" maxFractionDigits="2"/></td>
                 <td class="largo"><c:out value="${r.nuevosRiesgos}"/></td>
                 <td>
-                    <form method="post" action="${ctx}/app/riesgos" class="form-estado">
+                    <form method="post" action="${ctx}/app/riesgos" class="form-estado" autocomplete="off">
                         <input type="hidden" name="accion" value="estado">
                         <input type="hidden" name="id" value="${r.id}">
                         <input type="hidden" name="orden" value="<c:out value='${orden}'/>">
@@ -116,12 +116,17 @@
                 </td>
 
                 <td class="acciones">
-                    <a class="boton chico" href="${ctx}/app/riesgos?accion=editar&id=${r.id}">Editar</a>
+                    <a class="icono-btn editar" href="${ctx}/app/riesgos?accion=editar&id=${r.id}"
+                       title="Editar ${r.codigo}" aria-label="Editar ${r.codigo}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    </a>
                     <form method="post" action="${ctx}/app/riesgos"
                           onsubmit="return confirm('¿Eliminar el riesgo ${r.codigo}? Esta acción no se puede deshacer.');">
                         <input type="hidden" name="accion" value="eliminar">
                         <input type="hidden" name="id" value="${r.id}">
-                        <button type="submit" class="boton chico peligro">Eliminar</button>
+                        <button type="submit" class="icono-btn eliminar" title="Eliminar ${r.codigo}" aria-label="Eliminar ${r.codigo}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>
+                        </button>
                     </form>
                 </td>
             </tr>

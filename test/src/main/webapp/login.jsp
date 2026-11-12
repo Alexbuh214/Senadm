@@ -5,11 +5,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Iniciar sesión</title>
+    <title>Iniciar sesión · SENADI</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css?v=${applicationScope.version}">
 </head>
 <body class="centrado">
     <form class="tarjeta" method="post" action="${pageContext.request.contextPath}/login">
+        <div class="login-marca">
+            <span class="marca-logo" aria-hidden="true">S</span>
+            <strong>SENADI</strong>
+            <small>Matriz de Riesgos y Brechas</small>
+        </div>
         <h1>Iniciar sesión</h1>
 
         <c:if test="${not empty error}">
