@@ -43,6 +43,7 @@ public class RiesgoDAO {
                     + "PLAN_ACCION VARCHAR(2000),"
                     + "NUEVOS_RIESGOS VARCHAR(2000),"
                     + "ESTADO VARCHAR(20) NOT NULL DEFAULT 'Pendiente')");
+            migrarAreas(cn);
             try (ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM RIESGO")) {
                 rs.next();
                 if (rs.getInt(1) > 0) {
@@ -52,6 +53,25 @@ public class RiesgoDAO {
         }
         for (Riesgo r : datosIniciales()) {
             insertar(r);
+        }
+    }
+
+    /** Áreas genéricas antiguas -> dirección oficial que las reemplaza. */
+    private static final String[][] AREAS_ANTIGUAS = {
+        {"Tecnología de Información", "Dirección de Tecnologías de la Información y Comunicación"},
+        {"Recursos Humanos", "Dirección de Administración de Talento Humano"},
+        {"Logística y Suministros", "Dirección Administrativa"},
+        {"Finanzas y Contabilidad", "Dirección Financiera"},
+    };
+
+    /** Pasa los riesgos guardados con un área antigua a su dirección oficial (se ejecuta al iniciar). */
+    private static void migrarAreas(Connection cn) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement("UPDATE RIESGO SET AREA=? WHERE AREA=?")) {
+            for (String[] a : AREAS_ANTIGUAS) {
+                ps.setString(1, a[1]);
+                ps.setString(2, a[0]);
+                ps.executeUpdate();
+            }
         }
     }
 
@@ -189,7 +209,7 @@ public class RiesgoDAO {
     /** Los 4 riesgos de ejemplo de la matriz FINAL (R01-R04). */
     private static List<Riesgo> datosIniciales() {
         List<Riesgo> l = new ArrayList<>();
-        l.add(nuevo("Tecnología de Información",
+        l.add(nuevo("Dirección de Tecnologías de la Información y Comunicación",
                 "Servidores locales sin cifrado de datos en reposo.",
                 "Fuga de información confidencial de clientes por accesos no autorizados.",
                 "Tecnológicos y de ciberseguridad y seguridad de la información", 4, 5,
@@ -197,7 +217,7 @@ public class RiesgoDAO {
                 "Ausencia total de tecnologías y algoritmos de cifrado local.", "Crítica",
                 "Contraseña básica de red Windows.", "Automatizado / En tiempo real / Continuo", "Muy eficiente",
                 "Evitar", "Adquirir licencias e implementar software de cifrado corporativo."));
-        l.add(nuevo("Recursos Humanos",
+        l.add(nuevo("Dirección de Administración de Talento Humano",
                 "No existen planes de sucesión ni revisión de bandas salariales.",
                 "Fuga de talento clave y pérdida de continuidad del negocio.",
                 "Legales y de cumplimiento", 4, 4,
@@ -205,7 +225,7 @@ public class RiesgoDAO {
                 "Desfase del 40% en compensaciones versus la competencia directa.", "Media",
                 "Entrevistas de salida informales.", "Diario / Semanal", "Eficiente",
                 "Mitigar", "Diseñar un programa de fidelización y actualizar la estructura salarial."));
-        l.add(nuevo("Logística y Suministros",
+        l.add(nuevo("Dirección Administrativa",
                 "Dependencia absoluta de un único proveedor de empaques.",
                 "Paralización de la cadena de distribución por falta de stock crítico.",
                 "Tecnológicos y de ciberseguridad y seguridad de la información", 2, 5,
@@ -213,7 +233,7 @@ public class RiesgoDAO {
                 "Cero convenios alternativos vigentes para materias primas críticas.", "Crítica",
                 "Monitoreo mensual de entregas.", "Mensual / Quincenal", "Moderado",
                 "Compartir o transferir", "Homologar y contratar dos proveedores alternativos de respaldo."));
-        l.add(nuevo("Finanzas y Contabilidad",
+        l.add(nuevo("Dirección Financiera",
                 "Cálculo y llenado manual de plantillas impositivas.",
                 "Sanciones impositivas y multas por errores en declaraciones fiscales.",
                 "De desastres", 3, 3,

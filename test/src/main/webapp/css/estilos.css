@@ -232,6 +232,66 @@ a { color: #2563eb; }
 .filtros { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0 12px; }
 .filtros label { display: flex; gap: 8px; align-items: center; font-weight: 400; }
 .filtros select { padding: 6px; }
+.filtros { align-items: center; }
+.filtros .filtro-area { max-width: 340px; }
+.limpiar-filtros { font-size: .85rem; color: #1d4ed8; text-decoration: none; }
+.limpiar-filtros:hover { text-decoration: underline; }
+
+/* Descarga a Excel */
+.descargas { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+.boton.excel {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #047857; text-decoration: none; white-space: nowrap;
+}
+.boton.excel:hover { background: #065f46; }
+.boton.excel svg {
+    width: 16px; height: 16px; fill: none; stroke: currentColor;
+    stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+button.boton.excel { border: 0; cursor: pointer; font: inherit; }
+
+/* Ventana de descarga */
+.dialogo {
+    width: min(480px, calc(100vw - 32px));
+    border: 0; border-radius: 12px; padding: 0;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .35);
+    color: #222;
+}
+.dialogo::backdrop { background: rgba(15, 23, 42, .55); backdrop-filter: blur(2px); }
+.dialogo[open] { animation: dialogo-entra .18s ease-out; }
+@keyframes dialogo-entra { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+.dialogo-cab {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 18px 20px; border-bottom: 1px solid #e2e8f0;
+}
+.dialogo-cab h2 { margin: 0 0 2px; font-size: 1.08rem; }
+.dialogo-cab p { margin: 0; font-size: .86rem; color: #64748b; }
+.dialogo-icono {
+    flex: none; width: 38px; height: 38px; border-radius: 9px;
+    background: #d1fae5; color: #047857; display: grid; place-items: center;
+}
+.dialogo-icono svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dialogo-cerrar {
+    margin-left: auto; background: transparent; color: #64748b;
+    font-size: 1.5rem; line-height: 1; padding: 2px 8px; border-radius: 6px;
+}
+.dialogo-cerrar:hover { background: #f1f5f9; color: #1e293b; }
+.dialogo-opcion { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px; }
+.dialogo-opcion h3 { margin: 0; font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; color: #475569; }
+.dialogo-opcion select { padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; width: 100%; }
+.dialogo-opcion .boton { justify-content: center; text-align: center; padding: 10px 16px; text-decoration: none; }
+.dialogo-nota { margin: -4px 0 0; font-size: .84rem; color: #64748b; }
+.dialogo-separador {
+    display: flex; align-items: center; gap: 10px; padding: 0 20px;
+    color: #94a3b8; font-size: .8rem;
+}
+.dialogo-separador::before, .dialogo-separador::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
+.dialogo-opcion:last-child { padding-bottom: 20px; }
+.resumen-filtro { margin: -4px 0 10px; font-size: .88rem; color: #475569; }
+@media (max-width: 720px) {
+    .descargas { margin-left: 0; width: 100%; }
+    .filtros .filtro-area { max-width: 100%; }
+}
 .matriz-scroll { max-height: calc(100vh - 220px); overflow: auto; background: #fff; border-radius: 8px; }
 .matriz { font-size: .8rem; }
 .matriz thead th { position: sticky; top: 0; z-index: 2; }

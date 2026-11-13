@@ -18,6 +18,14 @@
     </div>
 
     <form class="filtros" method="get" action="${ctx}/app/riesgos" autocomplete="off">
+        <label>Macroproceso / Área
+            <select name="area" class="filtro-area" onchange="this.form.submit()">
+                <option value="">Todas las áreas</option>
+                <c:forEach var="a" items="${areasFiltro}">
+                    <option value="<c:out value='${a}'/>" ${filtroArea == a ? 'selected' : ''}><c:out value="${a}"/></option>
+                </c:forEach>
+            </select>
+        </label>
         <label>Ordenar por
             <select name="orden" onchange="this.form.submit()">
                 <option value="id" ${orden == 'id' ? 'selected' : ''}>ID</option>
@@ -34,7 +42,74 @@
             </select>
         </label>
         <noscript><button type="submit">Aplicar</button></noscript>
+        <c:if test="${not empty filtroArea or not empty filtroEstado}">
+            <a class="limpiar-filtros" href="${ctx}/app/riesgos?orden=${orden}">Limpiar filtros</a>
+        </c:if>
+
+        <div class="descargas">
+            <button type="button" class="boton excel" id="abrir-descarga" aria-haspopup="dialog">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+                Descargar Excel
+            </button>
+        </div>
     </form>
+
+    <dialog id="dialogo-descarga" class="dialogo" aria-labelledby="titulo-descarga">
+        <div class="dialogo-cab">
+            <span class="dialogo-icono" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13l6 6M15 13l-6 6"/></svg>
+            </span>
+            <div>
+                <h2 id="titulo-descarga">Descargar matriz en Excel</h2>
+                <p>Elige si quieres un área en específico o la matriz completa.</p>
+            </div>
+            <button type="button" class="dialogo-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+
+        <form method="get" action="${ctx}/app/riesgos" class="dialogo-opcion" autocomplete="off">
+            <input type="hidden" name="accion" value="excel">
+            <input type="hidden" name="orden" value="<c:out value='${orden}'/>">
+            <h3>Por área</h3>
+            <select name="area" id="area-descarga" required aria-label="Macroproceso / Área">
+                <option value="">-- Seleccione un área --</option>
+                <c:forEach var="a" items="${areasFiltro}">
+                    <option value="<c:out value='${a}'/>" ${filtroArea == a ? 'selected' : ''}><c:out value="${a}"/></option>
+                </c:forEach>
+            </select>
+            <button type="submit" class="boton excel" data-cerrar-al-enviar>Descargar área</button>
+        </form>
+
+        <div class="dialogo-separador"><span>o</span></div>
+
+        <div class="dialogo-opcion">
+            <h3>Matriz general</h3>
+            <p class="dialogo-nota">Incluye los riesgos de todas las áreas.</p>
+            <c:url var="urlExcelGeneral" value="/app/riesgos">
+                <c:param name="accion" value="excel"/>
+                <c:param name="orden" value="${orden}"/>
+            </c:url>
+            <a class="boton secundario general" href="${urlExcelGeneral}" data-cerrar-al-enviar>Descargar matriz general</a>
+        </div>
+    </dialog>
+    <script>
+        (function () {
+            var d = document.getElementById('dialogo-descarga');
+            document.getElementById('abrir-descarga').addEventListener('click', function () { d.showModal(); });
+            d.addEventListener('click', function (e) {
+                if (e.target === d || e.target.closest('[data-cerrar]')) { d.close(); }
+            });
+            d.querySelectorAll('[data-cerrar-al-enviar]').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var f = b.closest('form');
+                    if (!f || f.checkValidity()) { setTimeout(function () { d.close(); }, 150); }
+                });
+            });
+        })();
+    </script>
+    <c:if test="${not empty filtroArea}">
+        <p class="resumen-filtro">Mostrando <strong>${riesgos.size()}</strong>
+            ${riesgos.size() == 1 ? 'riesgo' : 'riesgos'} de <strong><c:out value="${filtroArea}"/></strong></p>
+    </c:if>
 
     <div class="tabla-scroll matriz-scroll">
     <table class="tabla matriz">
@@ -105,6 +180,7 @@
                         <input type="hidden" name="id" value="${r.id}">
                         <input type="hidden" name="orden" value="<c:out value='${orden}'/>">
                         <input type="hidden" name="filtroEstado" value="<c:out value='${filtroEstado}'/>">
+                        <input type="hidden" name="filtroArea" value="<c:out value='${filtroArea}'/>">
                         <select name="estado" aria-label="Estado de ${r.codigo}" onchange="this.form.submit()"
                                 class="estado-${r.estado == 'Finalizado' ? 'fin' : (r.estado == 'En Proceso' ? 'proceso' : 'pend')}">
                             <c:forEach var="e" items="${estados}">

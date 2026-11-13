@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,7 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * CRUD de la Matriz Operativa.
- * GET  /app/riesgos                 -> matriz (orden=id|inherente|residual, estado=...)
+ * GET  /app/riesgos                 -> matriz (orden=id|inherente|residual, estado=..., area=...)
+ * GET  /app/riesgos?accion=excel    -> descarga .xlsx con los mismos filtros
  * GET  /app/riesgos?accion=nuevo    -> formulario vacío
  * GET  /app/riesgos?accion=editar&id=N
  * POST /app/riesgos accion=guardar  -> crea o actualiza
@@ -45,6 +48,8 @@ public class RiesgoServlet extends HttpServlet {
                     return;
                 }
                 mostrarFormulario(request, response, r, null);
+            } else if ("excel".equals(accion)) {
+                exportar(request, response);
             } else {
                 listar(request, response);
             }
@@ -109,23 +114,63 @@ public class RiesgoServlet extends HttpServlet {
 
     private void listar(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-        List<Riesgo> lista = dao.listar();
+        List<Riesgo> todos = dao.listar();
+        String orden = ordenValido(request.getParameter("orden"));
         String estado = valor(request.getParameter("estado"));
-        if (!estado.isEmpty()) {
-            lista = lista.stream().filter(r -> estado.equals(r.getEstado())).collect(Collectors.toList());
-        }
-        String orden = valor(request.getParameter("orden"));
-        if ("inherente".equals(orden)) {
-            lista.sort(Comparator.comparingInt(Riesgo::getPrioridadInherente));
-        } else if ("residual".equals(orden)) {
-            lista.sort(Comparator.comparingInt(Riesgo::getPrioridadResidual));
-        } else {
-            orden = "id";
-        }
-        request.setAttribute("riesgos", lista);
+        String area = valor(request.getParameter("area"));
+        request.setAttribute("riesgos", filtrar(todos, orden, estado, area));
         request.setAttribute("orden", orden);
         request.setAttribute("filtroEstado", estado);
+        request.setAttribute("filtroArea", area);
+        request.setAttribute("areasFiltro", areasFiltro(todos));
         request.getRequestDispatcher("/WEB-INF/vistas/matriz.jsp").forward(request, response);
+    }
+
+    /** Descarga la matriz en Excel respetando los filtros activos (área, estado y orden). */
+    private void exportar(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, IOException {
+        String orden = ordenValido(request.getParameter("orden"));
+        String estado = valor(request.getParameter("estado"));
+        String area = valor(request.getParameter("area"));
+        List<Riesgo> lista = filtrar(dao.listar(), orden, estado, area);
+
+        String nombre = "Matriz_Riesgos_" + (area.isEmpty() ? "General" : slug(area))
+                + (estado.isEmpty() ? "" : "_" + slug(estado)) + "_" + java.time.LocalDate.now() + ".xlsx";
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + nombre + "\"; filename*=UTF-8''"
+                + java.net.URLEncoder.encode(nombre, "UTF-8").replace("+", "%20"));
+        MatrizExcel.escribir(lista, area, estado, response.getOutputStream());
+    }
+
+    private static List<Riesgo> filtrar(List<Riesgo> lista, String orden, String estado, String area) {
+        List<Riesgo> r = lista.stream()
+                .filter(x -> estado.isEmpty() || estado.equals(x.getEstado()))
+                .filter(x -> area.isEmpty() || area.equals(x.getArea()))
+                .collect(Collectors.toList());
+        if ("inherente".equals(orden)) {
+            r.sort(Comparator.comparingInt(Riesgo::getPrioridadInherente));
+        } else if ("residual".equals(orden)) {
+            r.sort(Comparator.comparingInt(Riesgo::getPrioridadResidual));
+        }
+        return r;
+    }
+
+    /** Áreas del catálogo más las que solo existan en riesgos antiguos, para no perder ningún filtro. */
+    private static List<String> areasFiltro(List<Riesgo> todos) {
+        Set<String> areas = new LinkedHashSet<>(Catalogos.AREAS);
+        todos.stream().map(Riesgo::getArea).filter(a -> a != null && !a.isEmpty()).sorted().forEach(areas::add);
+        return new ArrayList<>(areas);
+    }
+
+    private static String ordenValido(String orden) {
+        String o = valor(orden);
+        return o.matches("inherente|residual") ? o : "id";
+    }
+
+    /** Texto apto para nombre de archivo: sin tildes ni espacios. */
+    private static String slug(String s) {
+        String sinTildes = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+        return sinTildes.replaceAll("[^A-Za-z0-9]+", "_").replaceAll("^_|_$", "");
     }
 
     private void mostrarFormulario(HttpServletRequest request, HttpServletResponse response, Riesgo r,
@@ -211,6 +256,7 @@ public class RiesgoServlet extends HttpServlet {
     private static String volverA(HttpServletRequest request) throws IOException {
         String orden = valor(request.getParameter("orden"));
         String filtro = valor(request.getParameter("filtroEstado"));
+        String area = valor(request.getParameter("filtroArea"));
         StringBuilder q = new StringBuilder();
         if (orden.matches("id|inherente|residual")) {
             q.append("orden=").append(orden);
@@ -218,6 +264,10 @@ public class RiesgoServlet extends HttpServlet {
         if (Catalogos.ESTADOS.contains(filtro)) {
             q.append(q.length() > 0 ? "&" : "").append("estado=")
                     .append(java.net.URLEncoder.encode(filtro, "UTF-8"));
+        }
+        if (!area.isEmpty() && area.length() <= 200) {
+            q.append(q.length() > 0 ? "&" : "").append("area=")
+                    .append(java.net.URLEncoder.encode(area, "UTF-8"));
         }
         return q.length() > 0 ? "?" + q : "";
     }

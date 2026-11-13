@@ -41,10 +41,28 @@ public final class Catalogos {
     static {
         // Para agregar o quitar áreas basta con editar esta lista y reiniciar el servidor.
         AREAS = List.of(
-                "Tecnología de Información",
-                "Recursos Humanos",
-                "Logística y Suministros",
-                "Finanzas y Contabilidad");
+                "Dirección Administrativa",
+                "Dirección de Administración de Talento Humano",
+                "Dirección de Asesoría Jurídica",
+                "Dirección de Auditoría Interna",
+                "Dirección de Documentación y Archivo",
+                "Dirección de Gestión Institucional",
+                "Dirección de Tecnologías de la Información y Comunicación",
+                "Dirección Financiera",
+                "Dirección General",
+                "Dirección Nacional de Propiedad Industrial",
+                "Dirección del Órgano Colegiado de Derechos Intelectuales",
+                "Dirección Técnica de Modificaciones al Registro",
+                "Dirección Técnica de Observancia",
+                "Dirección Técnica de Obtenciones Vegetales y Conocimientos Tradicionales",
+                "Dirección Técnica de Oposiciones",
+                "Dirección Técnica de Patentes",
+                "Dirección Técnica de Registro",
+                "Dirección Técnica de Signos Distintivos",
+                "Dirección Técnica de Sociedades de Gestión Colectiva",
+                "Unidad de Comunicación Social",
+                "Unidad de Planificación y Gestión Estratégica",
+                "Unidad de Relaciones Internacionales");
 
         Map<String, String> nat = new LinkedHashMap<>();
         nat.put("Financieros y presupuestarios", "Vinculados con ingresos, gastos, activos y utilización de recursos públicos.");
