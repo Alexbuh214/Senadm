@@ -20,7 +20,7 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession sesion = request.getSession(false);
         if (sesion != null && sesion.getAttribute("usuario") != null) {
-            response.sendRedirect(request.getContextPath() + "/app/inicio.jsp");
+            response.sendRedirect(request.getContextPath() + "/app/inicio");
             return;
         }
         request.getRequestDispatcher("/login.jsp").forward(request, response);
@@ -36,7 +36,7 @@ public class LoginServlet extends HttpServlet {
         if (USUARIO.equals(usuario) && CLAVE.equals(clave)) {
             HttpSession sesion = request.getSession(true);
             sesion.setAttribute("usuario", usuario);
-            response.sendRedirect(request.getContextPath() + "/app/inicio.jsp");
+            response.sendRedirect(request.getContextPath() + "/app/inicio");
         } else {
             request.setAttribute("error", "Usuario o contraseña incorrectos");
             request.getRequestDispatcher("/login.jsp").forward(request, response);

@@ -1,0 +1,218 @@
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<c:set var="seccion" value="matriz" scope="request"/>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Matriz Operativa · SENADI</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css?v=${applicationScope.version}">
+</head>
+<body>
+<%@include file="_cabecera.jspf"%>
+<main class="contenido ancho">
+    <div class="titulo-acciones">
+        <h1>Matriz de gestión de riesgos integrada con análisis de brechas</h1>
+        <a class="boton" href="${ctx}/app/riesgos?accion=nuevo">+ Nuevo riesgo</a>
+    </div>
+
+    <form class="filtros" method="get" action="${ctx}/app/riesgos" autocomplete="off">
+        <label>Macroproceso / Área
+            <select name="area" class="filtro-area" onchange="this.form.submit()">
+                <option value="">Todas las áreas</option>
+                <c:forEach var="a" items="${areasFiltro}">
+                    <option value="<c:out value='${a}'/>" ${filtroArea == a ? 'selected' : ''}><c:out value="${a}"/></option>
+                </c:forEach>
+            </select>
+        </label>
+        <label>Ordenar por
+            <select name="orden" onchange="this.form.submit()">
+                <option value="id" ${orden == 'id' ? 'selected' : ''}>ID</option>
+                <option value="inherente" ${orden == 'inherente' ? 'selected' : ''}>Riesgo inherente priorizado</option>
+                <option value="residual" ${orden == 'residual' ? 'selected' : ''}>Riesgo residual priorizado</option>
+            </select>
+        </label>
+        <label>Estado
+            <select name="estado" onchange="this.form.submit()">
+                <option value="">Todos</option>
+                <c:forEach var="e" items="${estados}">
+                    <option ${filtroEstado == e ? 'selected' : ''}><c:out value="${e}"/></option>
+                </c:forEach>
+            </select>
+        </label>
+        <noscript><button type="submit">Aplicar</button></noscript>
+        <c:if test="${not empty filtroArea or not empty filtroEstado}">
+            <a class="limpiar-filtros" href="${ctx}/app/riesgos?orden=${orden}">Limpiar filtros</a>
+        </c:if>
+
+        <div class="descargas">
+            <button type="button" class="boton excel" id="abrir-descarga" aria-haspopup="dialog">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+                Descargar Excel
+            </button>
+        </div>
+    </form>
+
+    <dialog id="dialogo-descarga" class="dialogo" aria-labelledby="titulo-descarga">
+        <div class="dialogo-cab">
+            <span class="dialogo-icono" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13l6 6M15 13l-6 6"/></svg>
+            </span>
+            <div>
+                <h2 id="titulo-descarga">Descargar matriz en Excel</h2>
+                <p>Elige si quieres un área en específico o la matriz completa.</p>
+            </div>
+            <button type="button" class="dialogo-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+
+        <form method="get" action="${ctx}/app/riesgos" class="dialogo-opcion" autocomplete="off">
+            <input type="hidden" name="accion" value="excel">
+            <input type="hidden" name="orden" value="<c:out value='${orden}'/>">
+            <h3>Por área</h3>
+            <select name="area" id="area-descarga" required aria-label="Macroproceso / Área">
+                <option value="">-- Seleccione un área --</option>
+                <c:forEach var="a" items="${areasFiltro}">
+                    <option value="<c:out value='${a}'/>" ${filtroArea == a ? 'selected' : ''}><c:out value="${a}"/></option>
+                </c:forEach>
+            </select>
+            <button type="submit" class="boton excel" data-cerrar-al-enviar>Descargar área</button>
+        </form>
+
+        <div class="dialogo-separador"><span>o</span></div>
+
+        <div class="dialogo-opcion">
+            <h3>Matriz general</h3>
+            <p class="dialogo-nota">Incluye los riesgos de todas las áreas.</p>
+            <c:url var="urlExcelGeneral" value="/app/riesgos">
+                <c:param name="accion" value="excel"/>
+                <c:param name="orden" value="${orden}"/>
+            </c:url>
+            <a class="boton secundario general" href="${urlExcelGeneral}" data-cerrar-al-enviar>Descargar matriz general</a>
+        </div>
+    </dialog>
+    <script>
+        (function () {
+            var d = document.getElementById('dialogo-descarga');
+            document.getElementById('abrir-descarga').addEventListener('click', function () { d.showModal(); });
+            d.addEventListener('click', function (e) {
+                if (e.target === d || e.target.closest('[data-cerrar]')) { d.close(); }
+            });
+            d.querySelectorAll('[data-cerrar-al-enviar]').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var f = b.closest('form');
+                    if (!f || f.checkValidity()) { setTimeout(function () { d.close(); }, 150); }
+                });
+            });
+        })();
+    </script>
+    <c:if test="${not empty filtroArea}">
+        <p class="resumen-filtro">Mostrando <strong>${riesgos.size()}</strong>
+            ${riesgos.size() == 1 ? 'riesgo' : 'riesgos'} de <strong><c:out value="${filtroArea}"/></strong></p>
+    </c:if>
+
+    <div class="tabla-scroll matriz-scroll">
+    <table class="tabla matriz">
+        <thead>
+        <tr class="etapas">
+            <th colspan="7" class="e1">ETAPA 1 · IDENTIFICACIÓN DEL RIESGO</th>
+            <th colspan="7" class="e2">ETAPA 2 · ANÁLISIS DEL RIESGO (ANÁLISIS DE BRECHAS)</th>
+            <th colspan="7" class="e3">ETAPA 3 · EVALUACIÓN DE RIESGOS</th>
+            <th colspan="13" class="e4">ETAPA 4 · PLAN DE TRATAMIENTO DE RIESGOS Y MONITOREO</th>
+            <th rowspan="2" class="acciones-col">Acciones</th>
+        </tr>
+        <tr>
+            <th>ID</th><th>Macroproceso / Área</th><th>Responsable</th><th>Estado actual (realidad)</th>
+            <th>Causa raíz</th><th>Riesgo identificado</th><th>Naturaleza</th>
+            <th>Prob. (1-5)</th><th>Imp. (1-5)</th><th>Nivel de criticidad / Riesgo inherente</th>
+            <th>Estado actual (realidad)</th><th>Estado deseado</th><th>Brecha detectada (GAP)</th><th>Nivel de brecha</th>
+            <th>Riesgo inherente priorizado</th><th>Controles actuales</th><th>Frecuencia del control</th>
+            <th>Efectividad control</th><th>Factor multiplicador</th><th>Nivel de criticidad (Riesgo residual)</th>
+            <th>Riesgo residual priorizado</th>
+            <th>Estrategia</th><th>Nombre del plan de acción</th><th>Tipo de control PLAN</th>
+            <th>Tiempo para implementar acción</th><th>Efectividad controles (PLAN)</th><th>Factor de efectividad</th>
+            <th>Nuevo nivel de riesgo</th><th>Frecuencia de ejecución / monitoreo del control</th>
+            <th>R. inicial / criticidad</th><th>R. residual</th><th>R. actual</th><th>Nuevos riesgos</th><th>Estado</th>
+        </tr>
+        </thead>
+        <tbody>
+        <c:forEach var="r" items="${riesgos}">
+            <tr>
+                <td class="codigo"><c:out value="${r.codigo}"/></td>
+                <td><c:out value="${r.area}"/></td>
+                <td><c:out value="${r.responsable}"/></td>
+                <td class="largo"><c:out value="${r.estadoActual}"/></td>
+                <td class="largo"><c:out value="${r.causaRaiz}"/></td>
+                <td class="largo"><c:out value="${r.riesgoIdentificado}"/></td>
+                <td><c:out value="${r.naturaleza}"/></td>
+
+                <td class="num">${r.probabilidad}</td>
+                <td class="num">${r.impacto}</td>
+                <td class="num ${r.cssInherente}"><fmt:formatNumber value="${r.riesgoInherente}" maxFractionDigits="2"/><small><c:out value="${r.clasifInherente}"/></small></td>
+                <td class="largo"><c:out value="${r.estadoActual}"/></td>
+                <td class="largo"><c:out value="${r.estadoDeseado}"/></td>
+                <td class="largo"><c:out value="${r.brecha}"/></td>
+                <td class="${r.cssBrecha}"><c:out value="${r.nivelBrecha}"/></td>
+
+                <td class="num prioridad">${r.prioridadInherente}</td>
+                <td class="largo"><c:out value="${r.controlesActuales}"/></td>
+                <td><c:out value="${r.frecuenciaControl}"/></td>
+                <td><c:out value="${r.efectividadControl}"/></td>
+                <td class="num"><fmt:formatNumber value="${r.factorControl}" maxFractionDigits="2"/></td>
+                <td class="num ${r.cssResidual}"><fmt:formatNumber value="${r.riesgoResidual}" maxFractionDigits="2"/><small><c:out value="${r.clasifResidual}"/></small></td>
+                <td class="num prioridad">${r.prioridadResidual}</td>
+
+                <td><c:out value="${r.estrategia}"/></td>
+                <td class="largo"><c:out value="${r.planAccion}"/></td>
+                <td class="largo"><c:out value="${r.tipoControlPlan}"/></td>
+                <td><c:out value="${r.tiempoImplementacion}"/></td>
+                <td><c:out value="${r.efectividadPlan}"/></td>
+                <td class="num"><fmt:formatNumber value="${r.factorPlan}" maxFractionDigits="2"/></td>
+                <td class="num ${r.cssNuevo}"><fmt:formatNumber value="${r.nuevoNivelRiesgo}" maxFractionDigits="2"/><small><c:out value="${r.clasifNuevo}"/></small></td>
+                <td><c:out value="${r.frecuenciaMonitoreo}"/></td>
+                <td class="num ${r.cssInherente}"><fmt:formatNumber value="${r.riesgoInherente}" maxFractionDigits="2"/></td>
+                <td class="num ${r.cssResidual}"><fmt:formatNumber value="${r.riesgoResidual}" maxFractionDigits="2"/></td>
+                <td class="num ${r.cssNuevo}"><fmt:formatNumber value="${r.nuevoNivelRiesgo}" maxFractionDigits="2"/></td>
+                <td class="largo"><c:out value="${r.nuevosRiesgos}"/></td>
+                <td>
+                    <form method="post" action="${ctx}/app/riesgos" class="form-estado" autocomplete="off">
+                        <input type="hidden" name="accion" value="estado">
+                        <input type="hidden" name="id" value="${r.id}">
+                        <input type="hidden" name="orden" value="<c:out value='${orden}'/>">
+                        <input type="hidden" name="filtroEstado" value="<c:out value='${filtroEstado}'/>">
+                        <input type="hidden" name="filtroArea" value="<c:out value='${filtroArea}'/>">
+                        <select name="estado" aria-label="Estado de ${r.codigo}" onchange="this.form.submit()"
+                                class="estado-${r.estado == 'Finalizado' ? 'fin' : (r.estado == 'En Proceso' ? 'proceso' : 'pend')}">
+                            <c:forEach var="e" items="${estados}">
+                                <option ${r.estado == e ? 'selected' : ''}><c:out value="${e}"/></option>
+                            </c:forEach>
+                        </select>
+                        <noscript><button type="submit" class="boton chico">OK</button></noscript>
+                    </form>
+                </td>
+
+                <td class="acciones">
+                    <a class="icono-btn editar" href="${ctx}/app/riesgos?accion=editar&id=${r.id}"
+                       title="Editar ${r.codigo}" aria-label="Editar ${r.codigo}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    </a>
+                    <form method="post" action="${ctx}/app/riesgos"
+                          onsubmit="return confirm('¿Eliminar el riesgo ${r.codigo}? Esta acción no se puede deshacer.');">
+                        <input type="hidden" name="accion" value="eliminar">
+                        <input type="hidden" name="id" value="${r.id}">
+                        <button type="submit" class="icono-btn eliminar" title="Eliminar ${r.codigo}" aria-label="Eliminar ${r.codigo}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        </c:forEach>
+        <c:if test="${empty riesgos}">
+            <tr><td colspan="35" class="vacio">No hay riesgos para mostrar.</td></tr>
+        </c:if>
+        </tbody>
+    </table>
+    </div>
+</main>
+</body>
+</html>
